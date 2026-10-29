@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#202124">
+    <meta name="theme-color" content="#121212">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mi Fit Objetivos</title>
@@ -22,9 +22,23 @@
             overflow-x: hidden;
         }
         .ring-progress {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
+        }
+        .overachieved-ring {
+            animation: pulseGlow 2s infinite alternate ease-in-out;
+        }
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 5px currentColor) brightness(1.1); }
+            100% { filter: drop-shadow(0 0 14px currentColor) brightness(1.45); }
+        }
+        .sparkle-badge {
+            animation: floatSparkle 1.8s infinite ease-in-out alternate;
+        }
+        @keyframes floatSparkle {
+            from { transform: scale(0.92) rotate(-6deg); }
+            to { transform: scale(1.12) rotate(6deg); }
         }
         .tab-view {
             animation: fadeIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
@@ -36,10 +50,10 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto bg-[#121212] relative pb-20 shadow-2xl">
+<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto bg-[#121212] relative pb-24 shadow-2xl">
 
     <!-- Top Header -->
-    <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-5 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
+    <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
         <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#4285F4] via-[#34A853] to-[#FBBC05] p-0.5 flex items-center justify-center">
                 <div class="w-full h-full bg-[#121212] rounded-full flex items-center justify-center">
@@ -49,17 +63,27 @@
                 </div>
             </div>
             <div>
-                <h1 id="header-title" class="text-lg font-medium tracking-tight text-white">Mi Fit Objetivos</h1>
-                <p id="current-date-label" class="text-xs text-gray-400"></p>
+                <h1 class="text-base font-medium tracking-tight text-white leading-tight">Mi Fit Objetivos</h1>
+                <p id="current-date-label" class="text-[11px] text-gray-400"></p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="openXiaomiModal()" class="flex items-center gap-1.5 text-xs bg-[#1E1F22] hover:bg-[#2A2B2E] text-[#8AB4F8] px-3 py-1.5 rounded-full border border-white/10 active:scale-95 transition">
+
+        <div class="flex items-center gap-1.5">
+            <!-- Streak Badge -->
+            <div onclick="openStreakInfo()" class="flex items-center gap-1 bg-[#282018] border border-[#FBBC05]/40 text-[#FBBC05] px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer active:scale-95 transition" title="Racha de días">
+                <span>🔥</span>
+                <span id="streak-count">0</span>
+            </div>
+
+            <!-- Xiaomi / Fit Sync -->
+            <button onclick="openXiaomiModal()" class="flex items-center gap-1 text-xs bg-[#1E1F22] hover:bg-[#2A2B2E] text-[#8AB4F8] px-2.5 py-1.5 rounded-full border border-white/10 active:scale-95 transition">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                <span>Xiaomi / Fit</span>
+                <span>Fit</span>
             </button>
+
+            <!-- Add Goal -->
             <button onclick="openAddGoalModal()" class="w-8 h-8 rounded-full bg-[#4285F4] text-white flex items-center justify-center shadow-lg active:scale-95 transition" title="Añadir anillo">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -72,7 +96,7 @@
     <main class="flex-1 px-4 pt-2 pb-6">
 
         <!-- TAB 1: INICIO -->
-        <section id="tab-home" class="tab-view space-y-5">
+        <section id="tab-home" class="tab-view space-y-4">
             <!-- Weekly Mini Rings Bar -->
             <div id="week-strip" class="grid grid-cols-7 gap-1 py-2 px-1 bg-[#1E1F22] rounded-2xl border border-white/5"></div>
 
@@ -83,13 +107,13 @@
                 </div>
 
                 <!-- Legend Pills -->
-                <div id="rings-legend" class="flex flex-wrap justify-center gap-3 mt-3 w-full"></div>
+                <div id="rings-legend" class="flex flex-wrap justify-center gap-2.5 mt-3 w-full"></div>
             </div>
 
             <!-- Daily Goals Cards -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
-                    <h2 class="text-sm font-medium text-gray-300 uppercase tracking-wider">Tus anillos de hoy</h2>
+                    <h2 class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tus anillos de hoy</h2>
                     <button onclick="openAddGoalModal()" class="text-xs text-[#8AB4F8] font-medium">+ Añadir anillo</button>
                 </div>
                 <div id="goals-list" class="space-y-3"></div>
@@ -101,7 +125,7 @@
             <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-medium text-white">Registro de actividades</h2>
-                    <p class="text-xs text-gray-400">Cada incremento y objetivo completado queda guardado</p>
+                    <p class="text-xs text-gray-400">Cada incremento y página leída queda guardado</p>
                 </div>
                 <input type="date" id="journal-date-picker" onchange="changeSelectedDate(this.value)" class="bg-[#2A2B2E] text-white text-xs px-3 py-2 rounded-xl border border-white/10 outline-none">
             </div>
@@ -111,9 +135,19 @@
 
         <!-- TAB 3: EXPLORAR -->
         <section id="tab-explore" class="tab-view hidden space-y-5">
+            <!-- Streak Card -->
+            <div class="bg-gradient-to-r from-[#2A1F14] to-[#1E1F22] rounded-2xl p-4 border border-[#FBBC05]/30 flex items-center justify-between">
+                <div class="space-y-0.5">
+                    <span class="text-[11px] uppercase tracking-wider text-[#FBBC05] font-semibold">Sistema de Racha</span>
+                    <h3 class="text-lg font-bold text-white"><span id="explore-streak-days">0</span> días seguidos</h3>
+                    <p class="text-xs text-gray-400">Mejor racha histórica: <b id="best-streak-days" class="text-gray-200">0</b> días</p>
+                </div>
+                <div class="text-4xl">🔥</div>
+            </div>
+
             <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
                 <h2 class="text-base font-medium text-white mb-1">Tendencia últimos 7 días</h2>
-                <p class="text-xs text-gray-400 mb-4">Porcentaje medio completado por objetivo</p>
+                <p class="text-xs text-gray-400 mb-4">Las barras con ✨ superaron el 100% del objetivo</p>
                 <div id="explore-charts" class="space-y-5"></div>
             </div>
 
@@ -140,8 +174,34 @@
             </div>
         </section>
 
-        <!-- TAB 4: PERFIL -->
+        <!-- TAB 4: PERFIL Y NOTIFICACIONES -->
         <section id="tab-profile" class="tab-view hidden space-y-4">
+            <!-- Daily 22:30 Reminder Card -->
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">🔔</span>
+                        <div>
+                            <h2 class="text-sm font-medium text-white">Aviso diario (22:30)</h2>
+                            <p class="text-xs text-gray-400">«No te olvides de apuntar tus objetivos de hoy»</p>
+                        </div>
+                    </div>
+                    <input type="time" id="reminder-time-input" value="22:30" onchange="saveReminderTime(this.value)" class="bg-[#28292C] text-white text-xs px-2.5 py-1.5 rounded-xl border border-white/10 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 gap-2 pt-1">
+                    <button onclick="enableBrowserNotifications()" id="btn-notif-perm" class="w-full py-2.5 px-3 rounded-xl bg-[#4285F4] text-white text-xs font-medium shadow active:scale-95 transition">
+                        1. Activar notificaciones del navegador
+                    </button>
+                    <button onclick="setNativeAndroidAlarm()" class="w-full py-2.5 px-3 rounded-xl bg-[#28292C] hover:bg-[#323438] text-[#81C995] text-xs font-medium border border-[#34A853]/30 active:scale-95 transition">
+                        2. Programar recordatorio fijo 22:30 en Xiaomi (100% fiable)
+                    </button>
+                </div>
+                <p id="notif-status-msg" class="text-[11px] text-gray-400 leading-relaxed">
+                    Consejo: En Android/Xiaomi, si cierras Chrome del todo, el sistema ahorra batería pausando las webs. El botón 2 te crea el recordatorio diario nativo a las 22:30 para que suene siempre aunque el móvil esté bloqueado.
+                </p>
+            </div>
+
             <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
                 <h2 class="text-base font-medium text-white mb-3">Gestionar mis anillos activos</h2>
                 <div id="profile-goals-manage" class="space-y-2.5"></div>
@@ -149,7 +209,6 @@
 
             <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 space-y-3">
                 <h3 class="text-sm font-medium text-white">Copia de seguridad de tus datos</h3>
-                <p class="text-xs text-gray-400">Tus datos se guardan automáticamente en la memoria interna de tu móvil (LocalStorage). Puedes exportarlos o restaurarlos cuando quieras.</p>
                 <div class="flex gap-2">
                     <button onclick="exportBackup()" class="flex-1 py-2.5 px-3 rounded-xl bg-[#2A2B2E] text-xs font-medium text-[#8AB4F8] border border-white/10">Exportar JSON</button>
                     <label class="flex-1 py-2.5 px-3 rounded-xl bg-[#2A2B2E] text-xs font-medium text-[#81C995] border border-white/10 text-center cursor-pointer">
@@ -162,6 +221,47 @@
 
     </main>
 
+    <!-- MODAL: BOOK PAGE TRACKER -->
+    <div id="book-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
+        <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-medium text-white">📖 Marcador de Lectura</h3>
+                <button onclick="closeBookModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400">Libro actual (opcional)</label>
+                    <input id="book-title-input" type="text" placeholder="Ej. Hábitos Atómicos" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="bg-[#28292C] p-3 rounded-2xl border border-white/5">
+                        <label class="text-[11px] text-gray-400 block">Ibas por la pág.</label>
+                        <input id="book-start-page" type="number" oninput="previewPagesRead()" class="w-full mt-1 bg-transparent text-white font-bold text-lg outline-none" placeholder="253">
+                    </div>
+                    <div class="bg-[#28292C] p-3 rounded-2xl border border-[#34A853]/40">
+                        <label class="text-[11px] text-[#81C995] block">Vas ahora por la pág.</label>
+                        <input id="book-current-page" type="number" oninput="previewPagesRead()" class="w-full mt-1 bg-transparent text-white font-bold text-lg outline-none" placeholder="303">
+                    </div>
+                </div>
+
+                <div id="book-diff-preview" class="bg-[#28292C]/70 rounded-xl p-3 text-center text-xs text-gray-300">
+                    Introduce la página por la que vas para sumar automáticamente las páginas leídas hoy.
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button onclick="setBookmarkOnly()" class="flex-1 py-2.5 bg-[#28292C] text-gray-300 rounded-xl text-xs font-medium border border-white/10">
+                        Solo cambiar marcador inicial
+                    </button>
+                    <button onclick="confirmBookReading()" class="flex-1 py-2.5 bg-[#34A853] text-black rounded-xl text-xs font-bold shadow-lg">
+                        Sumar lectura
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: XIAOMI / GOOGLE FIT PODOMETRO -->
     <div id="xiaomi-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
         <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
@@ -169,9 +269,6 @@
                 <h3 class="text-base font-medium text-white">Sincronizar pasos (Xiaomi / Fit)</h3>
                 <button onclick="closeXiaomiModal()" class="text-gray-400 hover:text-white">✕</button>
             </div>
-            <p class="text-xs text-gray-300 leading-relaxed">
-                Puedes activar el sensor acelerómetro de tu Xiaomi mientras caminas con la app abierta, o introducir directamente la cifra actual que marca tu reloj/móvil en <b>Mi Fitness / Google Fit</b>.
-            </p>
             <div class="bg-[#28292C] p-3.5 rounded-2xl space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-300">Sensor podómetro en vivo</span>
@@ -180,10 +277,10 @@
                 <p id="pedometer-status" class="text-[11px] text-gray-400">Estado: Desactivado</p>
             </div>
             <div class="space-y-1.5">
-                <label class="text-xs text-gray-400">Sincronización directa de pasos de hoy:</label>
+                <label class="text-xs text-gray-400">Pasos actuales en tu Xiaomi / Google Fit:</label>
                 <div class="flex gap-2">
-                    <input type="number" id="manual-steps-input" placeholder="Ej. 7450" class="flex-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
-                    <button onclick="syncStepsNow()" class="bg-[#34A853] text-black font-medium px-4 py-2 rounded-xl text-xs">Guardar</button>
+                    <input type="number" id="manual-steps-input" placeholder="Ej. 10500" class="flex-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    <button onclick="syncStepsNow()" class="bg-[#34A853] text-black font-bold px-4 py-2 rounded-xl text-xs">Guardar</button>
                 </div>
             </div>
         </div>
@@ -226,7 +323,7 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar (Google Fit Exact Layout) -->
+    <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1E1F22]/95 backdrop-blur-md border-t border-white/10 px-2 py-1.5 flex justify-around items-center z-40">
         <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center py-1 px-4 rounded-2xl text-[#8AB4F8]">
             <div id="pill-home" class="px-4 py-1 rounded-full bg-[#8AB4F8]/20 mb-0.5">
@@ -262,19 +359,28 @@
 
         const defaultGoals = [
             { id: 'steps', name: 'Andar 10.000 pasos', target: 10000, unit: 'pasos', step: 1000, color: '#4285F4' },
-            { id: 'reading', name: 'Leer 50 páginas', target: 50, unit: 'páginas', step: 10, color: '#34A853' },
+            { id: 'reading', name: 'Leer 50 páginas', target: 50, unit: 'páginas', step: 10, color: '#34A853', isBook: true },
             { id: 'coursera', name: 'Módulo de Coursera', target: 1, unit: 'módulo', step: 1, color: '#FBBC05' }
         ];
 
         function getTodayStr() {
             const d = new Date();
-            return d.toISOString().split('T')[0];
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         let state = {
             selectedDate: getTodayStr(),
             goals: defaultGoals,
-            history: {}, // { 'YYYY-MM-DD': { values: { goalId: number }, logs: [ { time, goalName, delta, color } ] } }
+            history: {},
+            bookTracker: {
+                title: 'Mi Libro Actual',
+                currentPage: 253
+            },
+            reminderTime: '22:30',
+            lastNotifiedDate: '',
             pedometerActive: false
         };
 
@@ -284,7 +390,14 @@
                 try {
                     const parsed = JSON.parse(raw);
                     state.goals = parsed.goals && parsed.goals.length ? parsed.goals : defaultGoals;
+                    // Ensure reading goal has book flag
+                    state.goals.forEach(g => {
+                        if (g.id === 'reading' || g.unit.toLowerCase().includes('pág')) g.isBook = true;
+                    });
                     state.history = parsed.history || {};
+                    if (parsed.bookTracker) state.bookTracker = parsed.bookTracker;
+                    if (parsed.reminderTime) state.reminderTime = parsed.reminderTime;
+                    if (parsed.lastNotifiedDate) state.lastNotifiedDate = parsed.lastNotifiedDate;
                 } catch (e) { console.error(e); }
             }
             ensureDayRecord(state.selectedDate);
@@ -293,7 +406,10 @@
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 goals: state.goals,
-                history: state.history
+                history: state.history,
+                bookTracker: state.bookTracker,
+                reminderTime: state.reminderTime,
+                lastNotifiedDate: state.lastNotifiedDate
             }));
         }
 
@@ -308,6 +424,53 @@
             });
         }
 
+        // Check if all goals are met on a given date
+        function isDayCompleted(dateStr) {
+            if (!state.history[dateStr] || !state.goals.length) return false;
+            return state.goals.every(g => (state.history[dateStr].values[g.id] || 0) >= g.target);
+        }
+
+        // Calculate current streak and best streak
+        function calculateStreaks() {
+            let currentStreak = 0;
+            const today = new Date();
+            
+            // Check today first; if today is not yet complete, start counting from yesterday
+            const todayStr = getTodayStr();
+            let checkDate = new Date(today);
+            if (!isDayCompleted(todayStr)) {
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+
+            while (true) {
+                const y = checkDate.getFullYear();
+                const m = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const d = String(checkDate.getDate()).padStart(2, '0');
+                const dStr = `${y}-${m}-${d}`;
+                if (isDayCompleted(dStr)) {
+                    currentStreak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            // Calculate best historical streak
+            const allDates = Object.keys(state.history).sort();
+            let bestStreak = currentStreak;
+            let tempStreak = 0;
+            for (let i = 0; i < allDates.length; i++) {
+                if (isDayCompleted(allDates[i])) {
+                    tempStreak++;
+                    if (tempStreak > bestStreak) bestStreak = tempStreak;
+                } else {
+                    tempStreak = 0;
+                }
+            }
+
+            return { currentStreak, bestStreak };
+        }
+
         function formatDateNice(dateStr) {
             const today = getTodayStr();
             const d = new Date(dateStr + 'T00:00:00');
@@ -316,7 +479,7 @@
             return dateStr === today ? `Hoy, ${formatted}` : formatted;
         }
 
-        function updateProgress(goalId, delta, setExact = false) {
+        function updateProgress(goalId, delta, setExact = false, customLogNote = '') {
             ensureDayRecord(state.selectedDate);
             const goal = state.goals.find(g => g.id === goalId);
             if (!goal) return;
@@ -329,10 +492,11 @@
             if (diff !== 0) {
                 const now = new Date();
                 const timeStr = now.toTimeString().slice(0, 5);
+                const signDiff = diff > 0 ? `+${diff} ${goal.unit}` : `${diff} ${goal.unit}`;
                 state.history[state.selectedDate].logs.unshift({
                     time: timeStr,
-                    goalName: goal.name,
-                    delta: diff > 0 ? `+${diff} ${goal.unit}` : `${diff} ${goal.unit}`,
+                    goalName: customLogNote ? `${goal.name} (${customLogNote})` : goal.name,
+                    delta: signDiff,
                     total: `${next}/${goal.target} ${goal.unit}`,
                     color: goal.color
                 });
@@ -342,61 +506,99 @@
             renderAll();
         }
 
+        // Toggle instant completion from the green checkmark button
+        function quickCompleteGoal(goalId) {
+            ensureDayRecord(state.selectedDate);
+            const goal = state.goals.find(g => g.id === goalId);
+            if (!goal) return;
+            const currentVal = state.history[state.selectedDate].values[goalId] || 0;
+            if (currentVal < goal.target) {
+                updateProgress(goalId, goal.target, true);
+            }
+        }
+
         function renderConcentricRings() {
             const container = document.getElementById('rings-container');
             const legend = document.getElementById('rings-legend');
             ensureDayRecord(state.selectedDate);
 
             const numGoals = state.goals.length;
-            const size = 250;
+            const size = 256;
             const center = size / 2;
             const maxRadius = 108;
             const strokeWidth = Math.max(8, Math.min(16, Math.floor(75 / Math.max(1, numGoals))));
-            const gap = strokeWidth + 5;
+            const gap = strokeWidth + 6;
 
             let circlesHtml = '';
+            let sparklesHtml = '';
             let completedCount = 0;
+            let overachievedCount = 0;
 
             state.goals.forEach((goal, idx) => {
                 const radius = Math.max(22, maxRadius - idx * gap);
                 const circumference = 2 * Math.PI * radius;
                 const val = state.history[state.selectedDate].values[goal.id] || 0;
-                const ratio = Math.min(1, val / goal.target);
+                const rawRatio = val / goal.target;
+                const ratio = Math.min(1, rawRatio);
+                const isOver = val > goal.target;
+
                 if (val >= goal.target) completedCount++;
+                if (isOver) overachievedCount++;
+
                 const offset = circumference - ratio * circumference;
+                const glowClass = isOver ? 'overachieved-ring' : '';
 
                 circlesHtml += `
                     <circle cx="${center}" cy="${center}" r="${radius}"
-                        fill="transparent" stroke="${goal.color}" stroke-opacity="0.18"
+                        fill="transparent" stroke="${goal.color}" stroke-opacity="0.16"
                         stroke-width="${strokeWidth}" />
                     <circle cx="${center}" cy="${center}" r="${radius}"
                         fill="transparent" stroke="${goal.color}"
+                        style="color: ${goal.color}"
                         stroke-width="${strokeWidth}"
                         stroke-dasharray="${circumference}"
                         stroke-dashoffset="${offset}"
                         stroke-linecap="round"
-                        class="ring-progress" />
+                        class="ring-progress ${glowClass}" />
                 `;
+
+                // Put a glowing star at the top of the ring when overachieved (>100%)
+                if (isOver) {
+                    const starY = center - radius;
+                    sparklesHtml += `
+                        <g transform="translate(${center}, ${starY})">
+                            <circle cx="0" cy="0" r="${strokeWidth * 0.65}" fill="#FFF" filter="drop-shadow(0 0 6px ${goal.color})"/>
+                            <text x="0" y="3.5" text-anchor="middle" font-size="11">✨</text>
+                        </g>
+                    `;
+                }
             });
 
             container.innerHTML = `
-                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="overflow-visible">
                     ${circlesHtml}
+                    ${sparklesHtml}
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span class="text-3xl font-bold text-white">${completedCount}/${numGoals}</span>
-                    <span class="text-[11px] uppercase tracking-wider text-gray-400 mt-0.5">Objetivos</span>
+                    <div class="flex items-center gap-1">
+                        <span class="text-3xl font-bold text-white">${completedCount}/${numGoals}</span>
+                        ${overachievedCount > 0 ? `<span class="text-lg sparkle-badge" title="¡Objetivo superado con creces!">✨</span>` : ''}
+                    </div>
+                    <span class="text-[11px] uppercase tracking-wider text-gray-400 mt-0.5">
+                        ${overachievedCount > 0 ? '¡Récord superado!' : 'Objetivos'}
+                    </span>
                 </div>
             `;
 
             legend.innerHTML = state.goals.map(g => {
                 const val = state.history[state.selectedDate].values[g.id] || 0;
-                const pct = Math.min(100, Math.round((val / g.target) * 100));
+                const pct = Math.round((val / g.target) * 100);
+                const isOver = val > g.target;
                 return `
-                    <div class="flex items-center gap-1.5 text-xs bg-[#28292C] px-2.5 py-1 rounded-full">
+                    <div class="flex items-center gap-1.5 text-xs ${isOver ? 'bg-white/15 border border-white/30' : 'bg-[#28292C]'} px-2.5 py-1 rounded-full">
                         <span class="w-2.5 h-2.5 rounded-full" style="background:${g.color}"></span>
                         <span class="text-gray-200 font-medium">${g.name.split(' ')[0]}</span>
-                        <span class="text-gray-400">${pct}%</span>
+                        <span class="${isOver ? 'text-[#FBBC05] font-bold' : 'text-gray-400'}">${pct}%${isOver ? ' ✨' : ''}</span>
                     </div>
                 `;
             }).join('');
@@ -410,19 +612,24 @@
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
-                const dStr = d.toISOString().split('T')[0];
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const dayNumStr = String(d.getDate()).padStart(2, '0');
+                const dStr = `${y}-${m}-${dayNumStr}`;
+
                 ensureDayRecord(dStr);
                 const isSelected = dStr === state.selectedDate;
 
                 const dayGoals = state.goals;
                 const completed = dayGoals.filter(g => (state.history[dStr].values[g.id] || 0) >= g.target).length;
+                const anyOver = dayGoals.some(g => (state.history[dStr].values[g.id] || 0) > g.target);
                 const ratio = dayGoals.length ? completed / dayGoals.length : 0;
                 const r = 13;
                 const c = 2 * Math.PI * r;
                 const off = c - ratio * c;
 
                 html += `
-                    <button onclick="changeSelectedDate('${dStr}')" class="flex flex-col items-center py-1.5 rounded-xl transition ${isSelected ? 'bg-[#2A2B2E]' : ''}">
+                    <button onclick="changeSelectedDate('${dStr}')" class="flex flex-col items-center py-1.5 rounded-xl transition relative ${isSelected ? 'bg-[#2A2B2E]' : ''}">
                         <span class="text-[10px] ${isSelected ? 'text-[#8AB4F8] font-bold' : 'text-gray-400'}">${days[d.getDay()]}</span>
                         <div class="relative w-8 h-8 flex items-center justify-center mt-0.5">
                             <svg class="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
@@ -432,6 +639,7 @@
                             </svg>
                             <span class="absolute text-[11px] font-medium ${isSelected ? 'text-white' : 'text-gray-300'}">${d.getDate()}</span>
                         </div>
+                        ${anyOver ? '<span class="absolute top-1 right-1 text-[9px]">✨</span>' : ''}
                     </button>
                 `;
             }
@@ -445,38 +653,147 @@
             list.innerHTML = state.goals.map(g => {
                 const val = state.history[state.selectedDate].values[g.id] || 0;
                 const done = val >= g.target;
-                const pct = Math.min(100, Math.round((val / g.target) * 100));
+                const isOver = val > g.target;
+                const pct = Math.round((val / g.target) * 100);
+                const barWidth = Math.min(100, pct);
+                const isBookGoal = g.id === 'reading' || g.isBook;
 
                 return `
-                    <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 space-y-3">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-[#1E1F22] rounded-2xl p-4 border ${isOver ? 'border-[#FBBC05]/50 shadow-[0_0_15px_rgba(251,188,5,0.12)]' : 'border-white/5'} space-y-3 transition">
+                        <div class="flex items-center justify-between gap-2">
                             <div class="flex items-center gap-3">
-                                <div class="w-3.5 h-10 rounded-full" style="background:${g.color}"></div>
+                                <div class="w-3.5 h-10 rounded-full" style="background:${g.color}; ${isOver ? `box-shadow: 0 0 10px ${g.color}` : ''}"></div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-white flex items-center gap-2">
-                                        ${g.name}
-                                        ${done ? '<span class="text-[10px] bg-[#34A853]/20 text-[#81C995] px-2 py-0.5 rounded-full">¡Conseguido!</span>' : ''}
+                                    <h3 class="text-sm font-medium text-white flex items-center gap-1.5 flex-wrap">
+                                        <span>${g.name}</span>
+                                        ${isOver ? `<span class="text-[10px] bg-[#FBBC05]/20 text-[#FBBC05] border border-[#FBBC05]/40 px-2 py-0.5 rounded-full font-bold">✨ ¡Superado! (${pct}%)</span>` : ''}
                                     </h3>
-                                    <p class="text-xs text-gray-400">${val.toLocaleString('es-ES')} / ${g.target.toLocaleString('es-ES')} ${g.unit} (${pct}%)</p>
+                                    <p class="text-xs text-gray-400">
+                                        ${val.toLocaleString('es-ES')} / ${g.target.toLocaleString('es-ES')} ${g.unit}
+                                        ${isBookGoal ? ` · <span class="text-[#81C995] font-medium">Marcador: Pág. ${state.bookTracker.currentPage}</span>` : ` (${pct}%)`}
+                                    </p>
                                 </div>
                             </div>
-                            <button onclick="updateProgress('${g.id}', ${g.target}, true)" class="text-xs px-3 py-1.5 rounded-xl font-medium transition ${done ? 'bg-[#34A853]/20 text-[#81C995]' : 'bg-[#28292C] text-gray-200 hover:bg-[#323438]'}">
-                                ${done ? '✓ Completado' : 'Completar'}
+
+                            <!-- Single Clean Green Action Button -->
+                            <button onclick="quickCompleteGoal('${g.id}')" 
+                                class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-base transition active:scale-90 shadow-md ${done ? 'bg-[#34A853] text-black shadow-[#34A853]/30' : 'bg-[#34A853]/20 text-[#81C995] border border-[#34A853]/40 hover:bg-[#34A853] hover:text-black'}"
+                                title="Completar objetivo de un toque">
+                                ✓
                             </button>
                         </div>
 
                         <div class="w-full h-1.5 bg-[#28292C] rounded-full overflow-hidden">
-                            <div class="h-full transition-all duration-500 rounded-full" style="width:${pct}%; background:${g.color}"></div>
+                            <div class="h-full transition-all duration-500 rounded-full" style="width:${barWidth}%; background:${g.color}"></div>
                         </div>
 
-                        <div class="flex items-center justify-between gap-2 pt-1">
-                            <button onclick="updateProgress('${g.id}', -${g.step})" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-gray-300 active:scale-95">-${g.step}</button>
-                            <button onclick="updateProgress('${g.id}', ${g.step})" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-black active:scale-95" style="background:${g.color}">+${g.step} ${g.unit}</button>
-                            ${g.id === 'steps' ? `<button onclick="openXiaomiModal()" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-[#8AB4F8] border border-[#8AB4F8]/30">Sync Pasos</button>` : ''}
-                        </div>
+                        ${isBookGoal ? `
+                            <!-- Book Page Tracker Quick Bar -->
+                            <div class="bg-[#28292C] rounded-xl p-2.5 flex items-center justify-between gap-2 border border-white/5">
+                                <div class="text-xs text-gray-300">
+                                    <span class="text-gray-400">Ibas por pág.</span> <b class="text-white">${state.bookTracker.currentPage}</b>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <input type="number" id="inline-page-input" placeholder="Nueva pág." 
+                                        class="w-24 bg-[#1E1F22] text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/10 outline-none"
+                                        onkeydown="if(event.key==='Enter') updateBookFromInline()">
+                                    <button onclick="updateBookFromInline()" class="bg-[#34A853] text-black font-bold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition">
+                                        Actualizar
+                                    </button>
+                                    <button onclick="openBookModal()" class="bg-[#1E1F22] text-gray-300 text-xs px-2 py-1.5 rounded-lg border border-white/10" title="Ajustar marcador">
+                                        ⚙️
+                                    </button>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="flex items-center justify-between gap-2 pt-0.5">
+                                <button onclick="updateProgress('${g.id}', -${g.step})" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-gray-300 active:scale-95">-${g.step}</button>
+                                <button onclick="updateProgress('${g.id}', ${g.step})" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-black active:scale-95" style="background:${g.color}">+${g.step} ${g.unit}</button>
+                                ${g.id === 'steps' ? `<button onclick="openXiaomiModal()" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-[#8AB4F8] border border-[#8AB4F8]/30">Sync Pasos</button>` : ''}
+                            </div>
+                        `}
                     </div>
                 `;
             }).join('');
+        }
+
+        // Inline book page update: calculates difference from current bookmark
+        function updateBookFromInline() {
+            const input = document.getElementById('inline-page-input');
+            if (!input) return;
+            const newPage = parseInt(input.value, 10);
+            if (isNaN(newPage) || newPage <= 0) return;
+
+            const oldPage = state.bookTracker.currentPage || 0;
+            const pagesRead = newPage - oldPage;
+
+            if (pagesRead > 0) {
+                state.bookTracker.currentPage = newPage;
+                updateProgress('reading', pagesRead, false, `Pág. ${oldPage} → ${newPage}`);
+            } else if (pagesRead < 0) {
+                // If user typed a lower page number (e.g. started a new book), update bookmark directly
+                state.bookTracker.currentPage = newPage;
+                saveState();
+                renderAll();
+            }
+            input.value = '';
+        }
+
+        function openBookModal() {
+            const m = document.getElementById('book-modal');
+            document.getElementById('book-title-input').value = state.bookTracker.title || '';
+            document.getElementById('book-start-page').value = state.bookTracker.currentPage || 0;
+            document.getElementById('book-current-page').value = '';
+            document.getElementById('book-diff-preview').textContent = 'Introduce la página actual para calcular automáticamente las páginas leídas.';
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeBookModal() {
+            const m = document.getElementById('book-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function previewPagesRead() {
+            const s = parseInt(document.getElementById('book-start-page').value, 10) || 0;
+            const c = parseInt(document.getElementById('book-current-page').value, 10);
+            const preview = document.getElementById('book-diff-preview');
+            if (!isNaN(c) && c > s) {
+                const diff = c - s;
+                preview.innerHTML = `Has leído <b class="text-[#81C995] text-sm">+${diff} páginas</b> (de la ${s} a la ${c}).`;
+            } else {
+                preview.textContent = 'Introduce una página superior a la inicial para sumar tu lectura.';
+            }
+        }
+
+        function setBookmarkOnly() {
+            const title = document.getElementById('book-title-input').value.trim();
+            const startPage = parseInt(document.getElementById('book-start-page').value, 10);
+            if (title) state.bookTracker.title = title;
+            if (!isNaN(startPage) && startPage >= 0) {
+                state.bookTracker.currentPage = startPage;
+            }
+            saveState();
+            closeBookModal();
+            renderAll();
+        }
+
+        function confirmBookReading() {
+            const title = document.getElementById('book-title-input').value.trim();
+            const startPage = parseInt(document.getElementById('book-start-page').value, 10) || 0;
+            const currentPage = parseInt(document.getElementById('book-current-page').value, 10);
+
+            if (title) state.bookTracker.title = title;
+
+            if (!isNaN(currentPage) && currentPage > startPage) {
+                const diff = currentPage - startPage;
+                state.bookTracker.currentPage = currentPage;
+                updateProgress('reading', diff, false, `Pág. ${startPage} → ${currentPage}`);
+                closeBookModal();
+            } else {
+                setBookmarkOnly();
+            }
         }
 
         function renderJournal() {
@@ -489,7 +806,7 @@
                 container.innerHTML = `
                     <div class="bg-[#1E1F22] rounded-2xl p-8 text-center border border-white/5">
                         <p class="text-sm text-gray-400">No hay registros en este día todavía.</p>
-                        <p class="text-xs text-gray-500 mt-1">Pulsa los botones + en la pestaña Inicio para registrar actividad.</p>
+                        <p class="text-xs text-gray-500 mt-1">Actualiza tu página del libro o pulsa el botón verde ✓ para registrar actividad.</p>
                     </div>
                 `;
                 return;
@@ -501,7 +818,7 @@
                         <span class="w-3 h-3 rounded-full" style="background:${item.color}"></span>
                         <div>
                             <p class="text-sm font-medium text-white">${item.goalName}</p>
-                            <p class="text-xs text-gray-400">Total acumulado: ${item.total}</p>
+                            <p class="text-xs text-gray-400">Total hoy: ${item.total}</p>
                         </div>
                     </div>
                     <div class="text-right">
@@ -518,19 +835,25 @@
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
-                last7.push(d.toISOString().split('T')[0]);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(d.getDate()).padStart(2, '0');
+                last7.push(`${y}-${m}-${dayStr}`);
             }
 
             container.innerHTML = state.goals.map(g => {
                 const bars = last7.map(dStr => {
                     ensureDayRecord(dStr);
                     const v = state.history[dStr].values[g.id] || 0;
-                    const pct = Math.min(100, Math.round((v / g.target) * 100));
+                    const pct = Math.round((v / g.target) * 100);
+                    const heightPct = Math.min(100, pct);
+                    const isOver = v > g.target;
                     const dayNum = dStr.split('-')[2];
                     return `
                         <div class="flex flex-col items-center flex-1">
+                            <span class="text-[9px] h-3 mb-0.5">${isOver ? '✨' : ''}</span>
                             <div class="w-full h-20 bg-[#28292C] rounded-lg flex items-end p-0.5 overflow-hidden">
-                                <div class="w-full rounded-md transition-all" style="height:${Math.max(6, pct)}%; background:${g.color}"></div>
+                                <div class="w-full rounded-md transition-all" style="height:${Math.max(6, heightPct)}%; background:${g.color}"></div>
                             </div>
                             <span class="text-[10px] text-gray-400 mt-1">${dayNum}</span>
                         </div>
@@ -538,7 +861,7 @@
                 }).join('');
 
                 return `
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                         <div class="flex justify-between text-xs">
                             <span class="font-medium text-white">${g.name}</span>
                             <span class="text-gray-400">Meta: ${g.target} ${g.unit}</span>
@@ -550,6 +873,7 @@
         }
 
         function renderProfile() {
+            document.getElementById('reminder-time-input').value = state.reminderTime || '22:30';
             const container = document.getElementById('profile-goals-manage');
             container.innerHTML = state.goals.map(g => `
                 <div class="flex items-center justify-between bg-[#28292C] p-3 rounded-xl">
@@ -564,6 +888,89 @@
                 </div>
             `).join('');
         }
+
+        function renderStreaks() {
+            const { currentStreak, bestStreak } = calculateStreaks();
+            document.getElementById('streak-count').textContent = currentStreak;
+            const expStreak = document.getElementById('explore-streak-days');
+            const bestEl = document.getElementById('best-streak-days');
+            if (expStreak) expStreak.textContent = currentStreak;
+            if (bestEl) bestEl.textContent = bestStreak;
+        }
+
+        function openStreakInfo() {
+            switchTab('explore');
+        }
+
+        // Notifications at 22:30
+        function saveReminderTime(val) {
+            state.reminderTime = val || '22:30';
+            saveState();
+        }
+
+        function enableBrowserNotifications() {
+            const statusMsg = document.getElementById('notif-status-msg');
+            if (!('Notification' in window)) {
+                statusMsg.textContent = 'Tu navegador actual no soporta notificaciones directas. Usa el botón 2 para tu Xiaomi.';
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    statusMsg.textContent = '¡Permiso concedido! Recibirás un aviso de prueba ahora mismo y todos los días a las ' + state.reminderTime + '.';
+                    new Notification('Mi Fit Objetivos 🔥', {
+                        body: '¡No te olvides de apuntar tus objetivos de hoy!',
+                    });
+                } else {
+                    statusMsg.textContent = 'Permiso denegado en el navegador. Usa el botón 2 para crear la alerta en el calendario/reloj de Xiaomi.';
+                }
+            });
+        }
+
+        // Creates a recurring daily 22:30 calendar alarm (.ics) or opens Google Calendar so Xiaomi rings even when Chrome is closed
+        function setNativeAndroidAlarm() {
+            const [hours, minutes] = (state.reminderTime || '22:30').split(':');
+            const icsContent = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "BEGIN:VEVENT",
+                "SUMMARY:🔥 No te olvides de apuntar tus objetivos de hoy",
+                "DESCRIPTION:Abre Mi Fit Objetivos y registra tus páginas leídas, pasos y Coursera.",
+                `DTSTART:20250101T${hours}${minutes}00`,
+                `DTEND:20250101T${hours}${minutes}00`,
+                "RRULE:FREQ=DAILY",
+                "BEGIN:VALARM",
+                "TRIGGER:-PT0M",
+                "ACTION:DISPLAY",
+                "DESCRIPTION:No te olvides de apuntar tus objetivos de hoy",
+                "END:VALARM",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\r\n");
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'recordatorio-objetivos-2230.ics');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        // Background check every 30 seconds while app is open/in memory
+        setInterval(() => {
+            const now = new Date();
+            const currentHHMM = now.toTimeString().slice(0, 5);
+            const todayStr = getTodayStr();
+            if (currentHHMM === (state.reminderTime || '22:30') && state.lastNotifiedDate !== todayStr) {
+                state.lastNotifiedDate = todayStr;
+                saveState();
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Mi Fit Objetivos 🔥', {
+                        body: 'No te olvides de apuntar tus objetivos de hoy (libros, pasos y Coursera).'
+                    });
+                }
+            }
+        }, 30000);
 
         function deleteGoal(id) {
             state.goals = state.goals.filter(g => g.id !== id);
@@ -626,7 +1033,7 @@
                     state.pedometerActive = true;
                     btn.textContent = 'Detener sensor';
                     btn.classList.replace('bg-[#4285F4]', 'bg-red-500');
-                    status.textContent = 'Estado: Escuchando acelerómetro del móvil... Camina con el móvil.';
+                    status.textContent = 'Estado: Escuchando acelerómetro del móvil...';
                 } else {
                     status.textContent = 'Tu navegador no expone el sensor en esta pestaña.';
                 }
@@ -690,7 +1097,7 @@
         }
 
         function exportBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ goals: state.goals, history: state.history }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
             const a = document.createElement('a');
             a.setAttribute('href', dataStr);
             a.setAttribute('download', `mi-fit-backup-${getTodayStr()}.json`);
@@ -709,6 +1116,7 @@
                     if (parsed.goals && parsed.history) {
                         state.goals = parsed.goals;
                         state.history = parsed.history;
+                        if (parsed.bookTracker) state.bookTracker = parsed.bookTracker;
                         saveState();
                         renderAll();
                     }
@@ -719,6 +1127,7 @@
 
         function renderAll() {
             document.getElementById('current-date-label').textContent = formatDateNice(state.selectedDate);
+            renderStreaks();
             renderWeekStrip();
             renderConcentricRings();
             renderGoalsCards();
