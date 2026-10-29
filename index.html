@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#202124">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Mi Fit Objetivos</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            background-color: #121212;
+            color: #E8EAED;
+            overflow-x: hidden;
+        }
+        .ring-progress {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .tab-view {
+            animation: fadeIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto bg-[#121212] relative pb-20 shadow-2xl">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-5 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#4285F4] via-[#34A853] to-[#FBBC05] p-0.5 flex items-center justify-center">
+                <div class="w-full h-full bg-[#121212] rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#4285F4]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <h1 id="header-title" class="text-lg font-medium tracking-tight text-white">Mi Fit Objetivos</h1>
+                <p id="current-date-label" class="text-xs text-gray-400"></p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openXiaomiModal()" class="flex items-center gap-1.5 text-xs bg-[#1E1F22] hover:bg-[#2A2B2E] text-[#8AB4F8] px-3 py-1.5 rounded-full border border-white/10 active:scale-95 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Xiaomi / Fit</span>
+            </button>
+            <button onclick="openAddGoalModal()" class="w-8 h-8 rounded-full bg-[#4285F4] text-white flex items-center justify-center shadow-lg active:scale-95 transition" title="Añadir anillo">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 px-4 pt-2 pb-6">
+
+        <!-- TAB 1: INICIO -->
+        <section id="tab-home" class="tab-view space-y-5">
+            <!-- Weekly Mini Rings Bar -->
+            <div id="week-strip" class="grid grid-cols-7 gap-1 py-2 px-1 bg-[#1E1F22] rounded-2xl border border-white/5"></div>
+
+            <!-- Main Concentric Rings Card -->
+            <div class="bg-[#1E1F22] rounded-3xl p-5 border border-white/5 flex flex-col items-center relative overflow-hidden">
+                <div id="rings-container" class="relative w-64 h-64 flex items-center justify-center my-1">
+                    <!-- Dynamic SVG injected via JS -->
+                </div>
+
+                <!-- Legend Pills -->
+                <div id="rings-legend" class="flex flex-wrap justify-center gap-3 mt-3 w-full"></div>
+            </div>
+
+            <!-- Daily Goals Cards -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h2 class="text-sm font-medium text-gray-300 uppercase tracking-wider">Tus anillos de hoy</h2>
+                    <button onclick="openAddGoalModal()" class="text-xs text-[#8AB4F8] font-medium">+ Añadir anillo</button>
+                </div>
+                <div id="goals-list" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DIARIO -->
+        <section id="tab-journal" class="tab-view hidden space-y-4">
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-medium text-white">Registro de actividades</h2>
+                    <p class="text-xs text-gray-400">Cada incremento y objetivo completado queda guardado</p>
+                </div>
+                <input type="date" id="journal-date-picker" onchange="changeSelectedDate(this.value)" class="bg-[#2A2B2E] text-white text-xs px-3 py-2 rounded-xl border border-white/10 outline-none">
+            </div>
+
+            <div id="journal-entries" class="space-y-2.5"></div>
+        </section>
+
+        <!-- TAB 3: EXPLORAR -->
+        <section id="tab-explore" class="tab-view hidden space-y-5">
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
+                <h2 class="text-base font-medium text-white mb-1">Tendencia últimos 7 días</h2>
+                <p class="text-xs text-gray-400 mb-4">Porcentaje medio completado por objetivo</p>
+                <div id="explore-charts" class="space-y-5"></div>
+            </div>
+
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
+                <h3 class="text-sm font-medium text-white mb-3">Plantillas rápidas (1 clic para añadir anillo)</h3>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="quickAddPreset('Beber Agua', 8, 'vasos', '#00ACC1', 1)" class="p-3 rounded-xl bg-[#28292C] hover:bg-[#323438] text-left border border-white/5 transition">
+                        <span class="text-xs font-semibold text-[#00ACC1]">● Hidratación</span>
+                        <p class="text-sm text-white font-medium mt-0.5">8 vasos al día</p>
+                    </button>
+                    <button onclick="quickAddPreset('Entrenar Fuerza', 45, 'min', '#FF7043', 15)" class="p-3 rounded-xl bg-[#28292C] hover:bg-[#323438] text-left border border-white/5 transition">
+                        <span class="text-xs font-semibold text-[#FF7043]">● Gimnasio</span>
+                        <p class="text-sm text-white font-medium mt-0.5">45 min / día</p>
+                    </button>
+                    <button onclick="quickAddPreset('Meditación', 15, 'min', '#AB47BC', 5)" class="p-3 rounded-xl bg-[#28292C] hover:bg-[#323438] text-left border border-white/5 transition">
+                        <span class="text-xs font-semibold text-[#AB47BC]">● Mindfulness</span>
+                        <p class="text-sm text-white font-medium mt-0.5">15 min / día</p>
+                    </button>
+                    <button onclick="quickAddPreset('Estudiar Inglés', 30, 'min', '#EC407A', 10)" class="p-3 rounded-xl bg-[#28292C] hover:bg-[#323438] text-left border border-white/5 transition">
+                        <span class="text-xs font-semibold text-[#EC407A]">● Idiomas</span>
+                        <p class="text-sm text-white font-medium mt-0.5">30 min / día</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: PERFIL -->
+        <section id="tab-profile" class="tab-view hidden space-y-4">
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
+                <h2 class="text-base font-medium text-white mb-3">Gestionar mis anillos activos</h2>
+                <div id="profile-goals-manage" class="space-y-2.5"></div>
+            </div>
+
+            <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 space-y-3">
+                <h3 class="text-sm font-medium text-white">Copia de seguridad de tus datos</h3>
+                <p class="text-xs text-gray-400">Tus datos se guardan automáticamente en la memoria interna de tu móvil (LocalStorage). Puedes exportarlos o restaurarlos cuando quieras.</p>
+                <div class="flex gap-2">
+                    <button onclick="exportBackup()" class="flex-1 py-2.5 px-3 rounded-xl bg-[#2A2B2E] text-xs font-medium text-[#8AB4F8] border border-white/10">Exportar JSON</button>
+                    <label class="flex-1 py-2.5 px-3 rounded-xl bg-[#2A2B2E] text-xs font-medium text-[#81C995] border border-white/10 text-center cursor-pointer">
+                        Importar JSON
+                        <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: XIAOMI / GOOGLE FIT PODOMETRO -->
+    <div id="xiaomi-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
+        <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-medium text-white">Sincronizar pasos (Xiaomi / Fit)</h3>
+                <button onclick="closeXiaomiModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Puedes activar el sensor acelerómetro de tu Xiaomi mientras caminas con la app abierta, o introducir directamente la cifra actual que marca tu reloj/móvil en <b>Mi Fitness / Google Fit</b>.
+            </p>
+            <div class="bg-[#28292C] p-3.5 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-300">Sensor podómetro en vivo</span>
+                    <button id="pedometer-btn" onclick="togglePedometer()" class="px-3 py-1 rounded-full text-xs font-medium bg-[#4285F4] text-white">Activar sensor</button>
+                </div>
+                <p id="pedometer-status" class="text-[11px] text-gray-400">Estado: Desactivado</p>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs text-gray-400">Sincronización directa de pasos de hoy:</label>
+                <div class="flex gap-2">
+                    <input type="number" id="manual-steps-input" placeholder="Ej. 7450" class="flex-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    <button onclick="syncStepsNow()" class="bg-[#34A853] text-black font-medium px-4 py-2 rounded-xl text-xs">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD NEW GOAL RING -->
+    <div id="add-goal-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
+        <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-medium text-white">Nuevo anillo de objetivo</h3>
+                <button onclick="closeAddGoalModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400">Nombre del objetivo</label>
+                    <input id="new-goal-name" type="text" placeholder="Ej. Estudiar programación" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-gray-400">Meta diaria</label>
+                        <input id="new-goal-target" type="number" placeholder="Ej. 60" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Unidad</label>
+                        <input id="new-goal-unit" type="text" placeholder="páginas, min, pasos" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-gray-400">Botón rápido (+)</label>
+                        <input id="new-goal-step" type="number" value="10" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Color del anillo</label>
+                        <input id="new-goal-color" type="color" value="#A142F4" class="w-full mt-1 h-9 bg-[#28292C] rounded-xl px-1 border border-white/10 cursor-pointer">
+                    </div>
+                </div>
+                <button onclick="saveNewGoal()" class="w-full py-2.5 bg-[#4285F4] text-white rounded-xl font-medium text-sm shadow-lg">Crear anillo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Google Fit Exact Layout) -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1E1F22]/95 backdrop-blur-md border-t border-white/10 px-2 py-1.5 flex justify-around items-center z-40">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center py-1 px-4 rounded-2xl text-[#8AB4F8]">
+            <div id="pill-home" class="px-4 py-1 rounded-full bg-[#8AB4F8]/20 mb-0.5">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </div>
+            <span class="text-[11px] font-medium">Inicio</span>
+        </button>
+
+        <button onclick="switchTab('journal')" id="nav-journal" class="flex flex-col items-center py-1 px-4 rounded-2xl text-gray-400">
+            <div id="pill-journal" class="px-4 py-1 rounded-full mb-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <span class="text-[11px] font-medium">Diario</span>
+        </button>
+
+        <button onclick="switchTab('explore')" id="nav-explore" class="flex flex-col items-center py-1 px-4 rounded-2xl text-gray-400">
+            <div id="pill-explore" class="px-4 py-1 rounded-full mb-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+            </div>
+            <span class="text-[11px] font-medium">Explorar</span>
+        </button>
+
+        <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center py-1 px-4 rounded-2xl text-gray-400">
+            <div id="pill-profile" class="px-4 py-1 rounded-full mb-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <span class="text-[11px] font-medium">Perfil</span>
+        </button>
+    </nav>
+
+    <script>
+        const STORAGE_KEY = 'mi_fit_objetivos_v1';
+
+        const defaultGoals = [
+            { id: 'steps', name: 'Andar 10.000 pasos', target: 10000, unit: 'pasos', step: 1000, color: '#4285F4' },
+            { id: 'reading', name: 'Leer 50 páginas', target: 50, unit: 'páginas', step: 10, color: '#34A853' },
+            { id: 'coursera', name: 'Módulo de Coursera', target: 1, unit: 'módulo', step: 1, color: '#FBBC05' }
+        ];
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+
+        let state = {
+            selectedDate: getTodayStr(),
+            goals: defaultGoals,
+            history: {}, // { 'YYYY-MM-DD': { values: { goalId: number }, logs: [ { time, goalName, delta, color } ] } }
+            pedometerActive: false
+        };
+
+        function loadState() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    state.goals = parsed.goals && parsed.goals.length ? parsed.goals : defaultGoals;
+                    state.history = parsed.history || {};
+                } catch (e) { console.error(e); }
+            }
+            ensureDayRecord(state.selectedDate);
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                goals: state.goals,
+                history: state.history
+            }));
+        }
+
+        function ensureDayRecord(dateStr) {
+            if (!state.history[dateStr]) {
+                state.history[dateStr] = { values: {}, logs: [] };
+            }
+            state.goals.forEach(g => {
+                if (typeof state.history[dateStr].values[g.id] !== 'number') {
+                    state.history[dateStr].values[g.id] = 0;
+                }
+            });
+        }
+
+        function formatDateNice(dateStr) {
+            const today = getTodayStr();
+            const d = new Date(dateStr + 'T00:00:00');
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            const formatted = d.toLocaleDateString('es-ES', options);
+            return dateStr === today ? `Hoy, ${formatted}` : formatted;
+        }
+
+        function updateProgress(goalId, delta, setExact = false) {
+            ensureDayRecord(state.selectedDate);
+            const goal = state.goals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            const prev = state.history[state.selectedDate].values[goalId] || 0;
+            const next = setExact ? Math.max(0, delta) : Math.max(0, prev + delta);
+            const diff = next - prev;
+            state.history[state.selectedDate].values[goalId] = next;
+
+            if (diff !== 0) {
+                const now = new Date();
+                const timeStr = now.toTimeString().slice(0, 5);
+                state.history[state.selectedDate].logs.unshift({
+                    time: timeStr,
+                    goalName: goal.name,
+                    delta: diff > 0 ? `+${diff} ${goal.unit}` : `${diff} ${goal.unit}`,
+                    total: `${next}/${goal.target} ${goal.unit}`,
+                    color: goal.color
+                });
+            }
+
+            saveState();
+            renderAll();
+        }
+
+        function renderConcentricRings() {
+            const container = document.getElementById('rings-container');
+            const legend = document.getElementById('rings-legend');
+            ensureDayRecord(state.selectedDate);
+
+            const numGoals = state.goals.length;
+            const size = 250;
+            const center = size / 2;
+            const maxRadius = 108;
+            const strokeWidth = Math.max(8, Math.min(16, Math.floor(75 / Math.max(1, numGoals))));
+            const gap = strokeWidth + 5;
+
+            let circlesHtml = '';
+            let completedCount = 0;
+
+            state.goals.forEach((goal, idx) => {
+                const radius = Math.max(22, maxRadius - idx * gap);
+                const circumference = 2 * Math.PI * radius;
+                const val = state.history[state.selectedDate].values[goal.id] || 0;
+                const ratio = Math.min(1, val / goal.target);
+                if (val >= goal.target) completedCount++;
+                const offset = circumference - ratio * circumference;
+
+                circlesHtml += `
+                    <circle cx="${center}" cy="${center}" r="${radius}"
+                        fill="transparent" stroke="${goal.color}" stroke-opacity="0.18"
+                        stroke-width="${strokeWidth}" />
+                    <circle cx="${center}" cy="${center}" r="${radius}"
+                        fill="transparent" stroke="${goal.color}"
+                        stroke-width="${strokeWidth}"
+                        stroke-dasharray="${circumference}"
+                        stroke-dashoffset="${offset}"
+                        stroke-linecap="round"
+                        class="ring-progress" />
+                `;
+            });
+
+            container.innerHTML = `
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                    ${circlesHtml}
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                    <span class="text-3xl font-bold text-white">${completedCount}/${numGoals}</span>
+                    <span class="text-[11px] uppercase tracking-wider text-gray-400 mt-0.5">Objetivos</span>
+                </div>
+            `;
+
+            legend.innerHTML = state.goals.map(g => {
+                const val = state.history[state.selectedDate].values[g.id] || 0;
+                const pct = Math.min(100, Math.round((val / g.target) * 100));
+                return `
+                    <div class="flex items-center gap-1.5 text-xs bg-[#28292C] px-2.5 py-1 rounded-full">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background:${g.color}"></span>
+                        <span class="text-gray-200 font-medium">${g.name.split(' ')[0]}</span>
+                        <span class="text-gray-400">${pct}%</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderWeekStrip() {
+            const strip = document.getElementById('week-strip');
+            const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+            let html = '';
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dStr = d.toISOString().split('T')[0];
+                ensureDayRecord(dStr);
+                const isSelected = dStr === state.selectedDate;
+
+                const dayGoals = state.goals;
+                const completed = dayGoals.filter(g => (state.history[dStr].values[g.id] || 0) >= g.target).length;
+                const ratio = dayGoals.length ? completed / dayGoals.length : 0;
+                const r = 13;
+                const c = 2 * Math.PI * r;
+                const off = c - ratio * c;
+
+                html += `
+                    <button onclick="changeSelectedDate('${dStr}')" class="flex flex-col items-center py-1.5 rounded-xl transition ${isSelected ? 'bg-[#2A2B2E]' : ''}">
+                        <span class="text-[10px] ${isSelected ? 'text-[#8AB4F8] font-bold' : 'text-gray-400'}">${days[d.getDay()]}</span>
+                        <div class="relative w-8 h-8 flex items-center justify-center mt-0.5">
+                            <svg class="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
+                                <circle cx="16" cy="16" r="${r}" fill="none" stroke="#3C4043" stroke-width="3"/>
+                                <circle cx="16" cy="16" r="${r}" fill="none" stroke="${ratio === 1 ? '#34A853' : '#4285F4'}" stroke-width="3"
+                                    stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+                            </svg>
+                            <span class="absolute text-[11px] font-medium ${isSelected ? 'text-white' : 'text-gray-300'}">${d.getDate()}</span>
+                        </div>
+                    </button>
+                `;
+            }
+            strip.innerHTML = html;
+        }
+
+        function renderGoalsCards() {
+            const list = document.getElementById('goals-list');
+            ensureDayRecord(state.selectedDate);
+
+            list.innerHTML = state.goals.map(g => {
+                const val = state.history[state.selectedDate].values[g.id] || 0;
+                const done = val >= g.target;
+                const pct = Math.min(100, Math.round((val / g.target) * 100));
+
+                return `
+                    <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3.5 h-10 rounded-full" style="background:${g.color}"></div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-white flex items-center gap-2">
+                                        ${g.name}
+                                        ${done ? '<span class="text-[10px] bg-[#34A853]/20 text-[#81C995] px-2 py-0.5 rounded-full">¡Conseguido!</span>' : ''}
+                                    </h3>
+                                    <p class="text-xs text-gray-400">${val.toLocaleString('es-ES')} / ${g.target.toLocaleString('es-ES')} ${g.unit} (${pct}%)</p>
+                                </div>
+                            </div>
+                            <button onclick="updateProgress('${g.id}', ${g.target}, true)" class="text-xs px-3 py-1.5 rounded-xl font-medium transition ${done ? 'bg-[#34A853]/20 text-[#81C995]' : 'bg-[#28292C] text-gray-200 hover:bg-[#323438]'}">
+                                ${done ? '✓ Completado' : 'Completar'}
+                            </button>
+                        </div>
+
+                        <div class="w-full h-1.5 bg-[#28292C] rounded-full overflow-hidden">
+                            <div class="h-full transition-all duration-500 rounded-full" style="width:${pct}%; background:${g.color}"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <button onclick="updateProgress('${g.id}', -${g.step})" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-gray-300 active:scale-95">-${g.step}</button>
+                            <button onclick="updateProgress('${g.id}', ${g.step})" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-black active:scale-95" style="background:${g.color}">+${g.step} ${g.unit}</button>
+                            ${g.id === 'steps' ? `<button onclick="openXiaomiModal()" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-[#8AB4F8] border border-[#8AB4F8]/30">Sync Pasos</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderJournal() {
+            document.getElementById('journal-date-picker').value = state.selectedDate;
+            ensureDayRecord(state.selectedDate);
+            const logs = state.history[state.selectedDate].logs || [];
+            const container = document.getElementById('journal-entries');
+
+            if (!logs.length) {
+                container.innerHTML = `
+                    <div class="bg-[#1E1F22] rounded-2xl p-8 text-center border border-white/5">
+                        <p class="text-sm text-gray-400">No hay registros en este día todavía.</p>
+                        <p class="text-xs text-gray-500 mt-1">Pulsa los botones + en la pestaña Inicio para registrar actividad.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.map(item => `
+                <div class="bg-[#1E1F22] rounded-2xl p-3.5 border border-white/5 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full" style="background:${item.color}"></span>
+                        <div>
+                            <p class="text-sm font-medium text-white">${item.goalName}</p>
+                            <p class="text-xs text-gray-400">Total acumulado: ${item.total}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold text-white bg-[#28292C] px-2.5 py-1 rounded-lg">${item.delta}</span>
+                        <p class="text-[10px] text-gray-500 mt-1">${item.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderExplore() {
+            const container = document.getElementById('explore-charts');
+            const last7 = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                last7.push(d.toISOString().split('T')[0]);
+            }
+
+            container.innerHTML = state.goals.map(g => {
+                const bars = last7.map(dStr => {
+                    ensureDayRecord(dStr);
+                    const v = state.history[dStr].values[g.id] || 0;
+                    const pct = Math.min(100, Math.round((v / g.target) * 100));
+                    const dayNum = dStr.split('-')[2];
+                    return `
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="w-full h-20 bg-[#28292C] rounded-lg flex items-end p-0.5 overflow-hidden">
+                                <div class="w-full rounded-md transition-all" style="height:${Math.max(6, pct)}%; background:${g.color}"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-400 mt-1">${dayNum}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="font-medium text-white">${g.name}</span>
+                            <span class="text-gray-400">Meta: ${g.target} ${g.unit}</span>
+                        </div>
+                        <div class="flex gap-2 items-end">${bars}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProfile() {
+            const container = document.getElementById('profile-goals-manage');
+            container.innerHTML = state.goals.map(g => `
+                <div class="flex items-center justify-between bg-[#28292C] p-3 rounded-xl">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3.5 h-3.5 rounded-full" style="background:${g.color}"></span>
+                        <div>
+                            <p class="text-sm font-medium text-white">${g.name}</p>
+                            <p class="text-xs text-gray-400">${g.target} ${g.unit} / día</p>
+                        </div>
+                    </div>
+                    ${state.goals.length > 1 ? `<button onclick="deleteGoal('${g.id}')" class="text-xs text-red-400 hover:text-red-300 px-2 py-1">Eliminar</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function deleteGoal(id) {
+            state.goals = state.goals.filter(g => g.id !== id);
+            saveState();
+            renderAll();
+        }
+
+        function changeSelectedDate(dateStr) {
+            state.selectedDate = dateStr;
+            renderAll();
+        }
+
+        function switchTab(tab) {
+            ['home', 'journal', 'explore', 'profile'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+                const btn = document.getElementById(`nav-${t}`);
+                const pill = document.getElementById(`pill-${t}`);
+                if (t === tab) {
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-[#8AB4F8]');
+                    pill.classList.add('bg-[#8AB4F8]/20');
+                } else {
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('text-[#8AB4F8]');
+                    pill.classList.remove('bg-[#8AB4F8]/20');
+                }
+            });
+            renderAll();
+        }
+
+        function openXiaomiModal() {
+            const modal = document.getElementById('xiaomi-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const cur = state.history[state.selectedDate]?.values['steps'] || 0;
+            document.getElementById('manual-steps-input').value = cur;
+        }
+
+        function closeXiaomiModal() {
+            const modal = document.getElementById('xiaomi-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function syncStepsNow() {
+            const val = parseInt(document.getElementById('manual-steps-input').value, 10);
+            if (!isNaN(val) && val >= 0) {
+                updateProgress('steps', val, true);
+                closeXiaomiModal();
+            }
+        }
+
+        let lastStepTime = 0;
+        function togglePedometer() {
+            const status = document.getElementById('pedometer-status');
+            const btn = document.getElementById('pedometer-btn');
+            if (!state.pedometerActive) {
+                if (window.DeviceMotionEvent) {
+                    window.addEventListener('devicemotion', handleMotion);
+                    state.pedometerActive = true;
+                    btn.textContent = 'Detener sensor';
+                    btn.classList.replace('bg-[#4285F4]', 'bg-red-500');
+                    status.textContent = 'Estado: Escuchando acelerómetro del móvil... Camina con el móvil.';
+                } else {
+                    status.textContent = 'Tu navegador no expone el sensor en esta pestaña.';
+                }
+            } else {
+                window.removeEventListener('devicemotion', handleMotion);
+                state.pedometerActive = false;
+                btn.textContent = 'Activar sensor';
+                btn.classList.replace('bg-red-500', 'bg-[#4285F4]');
+                status.textContent = 'Estado: Desactivado';
+            }
+        }
+
+        function handleMotion(event) {
+            const acc = event.accelerationIncludingGravity;
+            if (!acc) return;
+            const magnitude = Math.sqrt((acc.x || 0)**2 + (acc.y || 0)**2 + (acc.z || 0)**2);
+            const now = Date.now();
+            if (magnitude > 13.5 && now - lastStepTime > 380) {
+                lastStepTime = now;
+                updateProgress('steps', 1);
+            }
+        }
+
+        function openAddGoalModal() {
+            const m = document.getElementById('add-goal-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeAddGoalModal() {
+            const m = document.getElementById('add-goal-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function saveNewGoal() {
+            const name = document.getElementById('new-goal-name').value.trim();
+            const target = parseInt(document.getElementById('new-goal-target').value, 10);
+            const unit = document.getElementById('new-goal-unit').value.trim() || 'uds';
+            const step = parseInt(document.getElementById('new-goal-step').value, 10) || 1;
+            const color = document.getElementById('new-goal-color').value || '#A142F4';
+
+            if (!name || isNaN(target) || target <= 0) return;
+
+            state.goals.push({
+                id: 'goal_' + Date.now(),
+                name, target, unit, step, color
+            });
+            saveState();
+            closeAddGoalModal();
+            renderAll();
+        }
+
+        function quickAddPreset(name, target, unit, color, step) {
+            state.goals.push({
+                id: 'goal_' + Date.now(),
+                name, target, unit, step, color
+            });
+            saveState();
+            switchTab('home');
+        }
+
+        function exportBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ goals: state.goals, history: state.history }, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute('href', dataStr);
+            a.setAttribute('download', `mi-fit-backup-${getTodayStr()}.json`);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.goals && parsed.history) {
+                        state.goals = parsed.goals;
+                        state.history = parsed.history;
+                        saveState();
+                        renderAll();
+                    }
+                } catch (err) { alert('Archivo inválido'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderAll() {
+            document.getElementById('current-date-label').textContent = formatDateNice(state.selectedDate);
+            renderWeekStrip();
+            renderConcentricRings();
+            renderGoalsCards();
+            renderJournal();
+            renderExplore();
+            renderProfile();
+        }
+
+        loadState();
+        renderAll();
+    </script>
+</body>
+</html>
