@@ -203,7 +203,10 @@
             </div>
 
             <div class="bg-[#1E1F22] rounded-2xl p-4 border border-white/5">
-                <h2 class="text-base font-medium text-white mb-3">Gestionar mis anillos activos</h2>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-medium text-white">Gestionar mis anillos activos</h2>
+                    <button onclick="openAddGoalModal()" class="text-xs text-[#8AB4F8] font-medium">+ Nuevo</button>
+                </div>
                 <div id="profile-goals-manage" class="space-y-2.5"></div>
             </div>
 
@@ -221,43 +224,67 @@
 
     </main>
 
-    <!-- MODAL: BOOK PAGE TRACKER -->
+    <!-- MODAL: EDIT EXISTING GOAL -->
+    <div id="edit-goal-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
+        <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-medium text-white">✏️ Modificar objetivo</h3>
+                <button onclick="closeEditGoalModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <input type="hidden" id="edit-goal-id">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400">Nombre del objetivo</label>
+                    <input id="edit-goal-name" type="text" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-gray-400">Meta diaria (ej. 30, 2...)</label>
+                        <input id="edit-goal-target" type="number" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Unidad</label>
+                        <input id="edit-goal-unit" type="text" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-gray-400">Botón rápido (+)</label>
+                        <input id="edit-goal-step" type="number" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Color del anillo</label>
+                        <input id="edit-goal-color" type="color" class="w-full mt-1 h-9 bg-[#28292C] rounded-xl px-1 border border-white/10 cursor-pointer">
+                    </div>
+                </div>
+                <button onclick="saveEditedGoal()" class="w-full py-2.5 bg-[#34A853] text-black rounded-xl font-bold text-sm shadow-lg">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD OR EDIT SINGLE BOOK -->
     <div id="book-modal" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
         <div class="bg-[#1E1F22] border border-white/10 rounded-3xl max-w-sm w-full p-5 space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-base font-medium text-white">📖 Marcador de Lectura</h3>
+                <h3 id="book-modal-title" class="text-base font-medium text-white">📖 Añadir nuevo libro</h3>
                 <button onclick="closeBookModal()" class="text-gray-400 hover:text-white">✕</button>
             </div>
-
+            <input type="hidden" id="book-modal-id">
             <div class="space-y-3">
                 <div>
-                    <label class="text-xs text-gray-400">Libro actual (opcional)</label>
+                    <label class="text-xs text-gray-400">Título del libro</label>
                     <input id="book-title-input" type="text" placeholder="Ej. Hábitos Atómicos" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
                 </div>
-
-                <div class="grid grid-cols-2 gap-2.5">
-                    <div class="bg-[#28292C] p-3 rounded-2xl border border-white/5">
-                        <label class="text-[11px] text-gray-400 block">Ibas por la pág.</label>
-                        <input id="book-start-page" type="number" oninput="previewPagesRead()" class="w-full mt-1 bg-transparent text-white font-bold text-lg outline-none" placeholder="253">
-                    </div>
-                    <div class="bg-[#28292C] p-3 rounded-2xl border border-[#34A853]/40">
-                        <label class="text-[11px] text-[#81C995] block">Vas ahora por la pág.</label>
-                        <input id="book-current-page" type="number" oninput="previewPagesRead()" class="w-full mt-1 bg-transparent text-white font-bold text-lg outline-none" placeholder="303">
-                    </div>
+                <div>
+                    <label class="text-xs text-gray-400">Página por la que vas actualmente (marcador inicial)</label>
+                    <input id="book-start-page" type="number" placeholder="Ej. 120" class="w-full mt-1 bg-[#28292C] text-white rounded-xl px-3 py-2 text-sm border border-white/10 outline-none">
                 </div>
-
-                <div id="book-diff-preview" class="bg-[#28292C]/70 rounded-xl p-3 text-center text-xs text-gray-300">
-                    Introduce la página por la que vas para sumar automáticamente las páginas leídas hoy.
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <button onclick="setBookmarkOnly()" class="flex-1 py-2.5 bg-[#28292C] text-gray-300 rounded-xl text-xs font-medium border border-white/10">
-                        Solo cambiar marcador inicial
-                    </button>
-                    <button onclick="confirmBookReading()" class="flex-1 py-2.5 bg-[#34A853] text-black rounded-xl text-xs font-bold shadow-lg">
-                        Sumar lectura
-                    </button>
-                </div>
+                <p class="text-[11px] text-gray-400">
+                    Nota: Al guardar aquí solo se ajusta el marcador de página sin sumar páginas al objetivo de hoy. Para sumar lectura diaria, usa el desplegable de libros en Inicio.
+                </p>
+                <button onclick="saveBookModal()" class="w-full py-2.5 bg-[#34A853] text-black rounded-xl text-sm font-bold shadow-lg">
+                    Guardar libro
+                </button>
             </div>
         </div>
     </div>
@@ -363,6 +390,13 @@
             { id: 'coursera', name: 'Módulo de Coursera', target: 1, unit: 'módulo', step: 1, color: '#FBBC05' }
         ];
 
+        const defaultBooks = [
+            { id: 'b1', title: 'Libro 1', currentPage: 253 },
+            { id: 'b2', title: 'Libro 2', currentPage: 80 },
+            { id: 'b3', title: 'Libro 3', currentPage: 45 },
+            { id: 'b4', title: 'Libro 4', currentPage: 12 }
+        ];
+
         function getTodayStr() {
             const d = new Date();
             const year = d.getFullYear();
@@ -375,10 +409,8 @@
             selectedDate: getTodayStr(),
             goals: defaultGoals,
             history: {},
-            bookTracker: {
-                title: 'Mi Libro Actual',
-                currentPage: 253
-            },
+            books: defaultBooks,
+            booksExpanded: false,
             reminderTime: '22:30',
             lastNotifiedDate: '',
             pedometerActive: false
@@ -390,12 +422,24 @@
                 try {
                     const parsed = JSON.parse(raw);
                     state.goals = parsed.goals && parsed.goals.length ? parsed.goals : defaultGoals;
-                    // Ensure reading goal has book flag
                     state.goals.forEach(g => {
                         if (g.id === 'reading' || g.unit.toLowerCase().includes('pág')) g.isBook = true;
                     });
                     state.history = parsed.history || {};
-                    if (parsed.bookTracker) state.bookTracker = parsed.bookTracker;
+
+                    if (Array.isArray(parsed.books) && parsed.books.length > 0) {
+                        state.books = parsed.books;
+                    } else if (parsed.bookTracker) {
+                        // Migrate single bookTracker to multi-book array
+                        state.books = [
+                            { id: 'b1', title: parsed.bookTracker.title || 'Libro 1', currentPage: parsed.bookTracker.currentPage || 253 },
+                            { id: 'b2', title: 'Libro 2', currentPage: 0 },
+                            { id: 'b3', title: 'Libro 3', currentPage: 0 },
+                            { id: 'b4', title: 'Libro 4', currentPage: 0 }
+                        ];
+                    }
+
+                    if (typeof parsed.booksExpanded === 'boolean') state.booksExpanded = parsed.booksExpanded;
                     if (parsed.reminderTime) state.reminderTime = parsed.reminderTime;
                     if (parsed.lastNotifiedDate) state.lastNotifiedDate = parsed.lastNotifiedDate;
                 } catch (e) { console.error(e); }
@@ -407,7 +451,8 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 goals: state.goals,
                 history: state.history,
-                bookTracker: state.bookTracker,
+                books: state.books,
+                booksExpanded: state.booksExpanded,
                 reminderTime: state.reminderTime,
                 lastNotifiedDate: state.lastNotifiedDate
             }));
@@ -424,18 +469,14 @@
             });
         }
 
-        // Check if all goals are met on a given date
         function isDayCompleted(dateStr) {
             if (!state.history[dateStr] || !state.goals.length) return false;
             return state.goals.every(g => (state.history[dateStr].values[g.id] || 0) >= g.target);
         }
 
-        // Calculate current streak and best streak
         function calculateStreaks() {
             let currentStreak = 0;
             const today = new Date();
-            
-            // Check today first; if today is not yet complete, start counting from yesterday
             const todayStr = getTodayStr();
             let checkDate = new Date(today);
             if (!isDayCompleted(todayStr)) {
@@ -455,7 +496,6 @@
                 }
             }
 
-            // Calculate best historical streak
             const allDates = Object.keys(state.history).sort();
             let bestStreak = currentStreak;
             let tempStreak = 0;
@@ -506,7 +546,6 @@
             renderAll();
         }
 
-        // Toggle instant completion from the green checkmark button
         function quickCompleteGoal(goalId) {
             ensureDayRecord(state.selectedDate);
             const goal = state.goals.find(g => g.id === goalId);
@@ -515,6 +554,12 @@
             if (currentVal < goal.target) {
                 updateProgress(goalId, goal.target, true);
             }
+        }
+
+        function toggleBooksDropdown() {
+            state.booksExpanded = !state.booksExpanded;
+            saveState();
+            renderGoalsCards();
         }
 
         function renderConcentricRings() {
@@ -562,7 +607,6 @@
                         class="ring-progress ${glowClass}" />
                 `;
 
-                // Put a glowing star at the top of the ring when overachieved (>100%)
                 if (isOver) {
                     const starY = center - radius;
                     sparklesHtml += `
@@ -658,26 +702,71 @@
                 const barWidth = Math.min(100, pct);
                 const isBookGoal = g.id === 'reading' || g.isBook;
 
+                let booksDropdownHtml = '';
+                if (isBookGoal && state.booksExpanded) {
+                    const bookRows = state.books.map(b => `
+                        <div class="bg-[#28292C] rounded-xl p-2.5 flex items-center justify-between gap-2 border border-white/5">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5">
+                                    <p class="text-xs font-medium text-white truncate">${b.title}</p>
+                                    <button onclick="openEditBookModal('${b.id}')" class="text-[11px] text-gray-400 hover:text-white" title="Editar título o página inicial">✏️</button>
+                                    ${state.books.length > 1 ? `<button onclick="deleteBook('${b.id}')" class="text-[11px] text-gray-500 hover:text-red-400" title="Borrar libro">✕</button>` : ''}
+                                </div>
+                                <p class="text-[11px] text-gray-400">Ibas por pág. <b class="text-[#81C995]">${b.currentPage}</b></p>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <input type="number" id="book-input-${b.id}" placeholder="Pág. hoy" 
+                                    class="w-20 bg-[#1E1F22] text-white text-xs px-2 py-1.5 rounded-lg border border-white/10 outline-none"
+                                    onkeydown="if(event.key==='Enter') updateSingleBookPage('${b.id}')">
+                                <button onclick="updateSingleBookPage('${b.id}')" class="bg-[#34A853] text-black font-bold text-xs px-2.5 py-1.5 rounded-lg active:scale-95 transition">
+                                    Sumar
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    booksDropdownHtml = `
+                        <div class="pt-2 space-y-2 border-t border-white/5 mt-2">
+                            <div class="flex items-center justify-between px-1">
+                                <span class="text-[11px] text-gray-400 font-medium">Tus libros en lectura (${state.books.length})</span>
+                                <button onclick="openAddBookModal()" class="text-[11px] text-[#81C995] font-medium">+ Añadir libro</button>
+                            </div>
+                            ${bookRows}
+                        </div>
+                    `;
+                }
+
                 return `
                     <div class="bg-[#1E1F22] rounded-2xl p-4 border ${isOver ? 'border-[#FBBC05]/50 shadow-[0_0_15px_rgba(251,188,5,0.12)]' : 'border-white/5'} space-y-3 transition">
                         <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-3">
-                                <div class="w-3.5 h-10 rounded-full" style="background:${g.color}; ${isOver ? `box-shadow: 0 0 10px ${g.color}` : ''}"></div>
-                                <div>
-                                    <h3 class="text-sm font-medium text-white flex items-center gap-1.5 flex-wrap">
-                                        <span>${g.name}</span>
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                ${isBookGoal ? `
+                                    <!-- Left Arrow to Expand/Collapse Books -->
+                                    <button onclick="toggleBooksDropdown()" class="w-8 h-8 rounded-xl bg-[#28292C] hover:bg-[#323438] text-gray-200 flex items-center justify-center transition active:scale-95 border border-white/10" title="Desplegar mis libros">
+                                        <svg class="w-4 h-4 transition-transform duration-200 ${state.booksExpanded ? 'rotate-90 text-[#81C995]' : ''}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </button>
+                                ` : `
+                                    <div class="w-3.5 h-10 rounded-full shrink-0" style="background:${g.color}; ${isOver ? `box-shadow: 0 0 10px ${g.color}` : ''}"></div>
+                                `}
+
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <h3 class="text-sm font-medium text-white truncate">${g.name}</h3>
+                                        <button onclick="openEditGoalModal('${g.id}')" class="text-xs text-gray-400 hover:text-white px-1" title="Modificar meta o nombre">✏️</button>
                                         ${isOver ? `<span class="text-[10px] bg-[#FBBC05]/20 text-[#FBBC05] border border-[#FBBC05]/40 px-2 py-0.5 rounded-full font-bold">✨ ¡Superado! (${pct}%)</span>` : ''}
-                                    </h3>
+                                    </div>
                                     <p class="text-xs text-gray-400">
-                                        ${val.toLocaleString('es-ES')} / ${g.target.toLocaleString('es-ES')} ${g.unit}
-                                        ${isBookGoal ? ` · <span class="text-[#81C995] font-medium">Marcador: Pág. ${state.bookTracker.currentPage}</span>` : ` (${pct}%)`}
+                                        ${val.toLocaleString('es-ES')} / ${g.target.toLocaleString('es-ES')} ${g.unit} (${pct}%)
+                                        ${isBookGoal ? ` · <button onclick="toggleBooksDropdown()" class="text-[#81C995] underline font-medium">${state.books.length} libros</button>` : ''}
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Single Clean Green Action Button -->
                             <button onclick="quickCompleteGoal('${g.id}')" 
-                                class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-base transition active:scale-90 shadow-md ${done ? 'bg-[#34A853] text-black shadow-[#34A853]/30' : 'bg-[#34A853]/20 text-[#81C995] border border-[#34A853]/40 hover:bg-[#34A853] hover:text-black'}"
+                                class="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center font-bold text-base transition active:scale-90 shadow-md ${done ? 'bg-[#34A853] text-black shadow-[#34A853]/30' : 'bg-[#34A853]/20 text-[#81C995] border border-[#34A853]/40 hover:bg-[#34A853] hover:text-black'}"
                                 title="Completar objetivo de un toque">
                                 ✓
                             </button>
@@ -687,25 +776,7 @@
                             <div class="h-full transition-all duration-500 rounded-full" style="width:${barWidth}%; background:${g.color}"></div>
                         </div>
 
-                        ${isBookGoal ? `
-                            <!-- Book Page Tracker Quick Bar -->
-                            <div class="bg-[#28292C] rounded-xl p-2.5 flex items-center justify-between gap-2 border border-white/5">
-                                <div class="text-xs text-gray-300">
-                                    <span class="text-gray-400">Ibas por pág.</span> <b class="text-white">${state.bookTracker.currentPage}</b>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <input type="number" id="inline-page-input" placeholder="Nueva pág." 
-                                        class="w-24 bg-[#1E1F22] text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/10 outline-none"
-                                        onkeydown="if(event.key==='Enter') updateBookFromInline()">
-                                    <button onclick="updateBookFromInline()" class="bg-[#34A853] text-black font-bold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition">
-                                        Actualizar
-                                    </button>
-                                    <button onclick="openBookModal()" class="bg-[#1E1F22] text-gray-300 text-xs px-2 py-1.5 rounded-lg border border-white/10" title="Ajustar marcador">
-                                        ⚙️
-                                    </button>
-                                </div>
-                            </div>
-                        ` : `
+                        ${isBookGoal ? booksDropdownHtml : `
                             <div class="flex items-center justify-between gap-2 pt-0.5">
                                 <button onclick="updateProgress('${g.id}', -${g.step})" class="px-3 py-1.5 rounded-xl bg-[#28292C] text-xs text-gray-300 active:scale-95">-${g.step}</button>
                                 <button onclick="updateProgress('${g.id}', ${g.step})" class="flex-1 py-1.5 rounded-xl text-xs font-bold text-black active:scale-95" style="background:${g.color}">+${g.step} ${g.unit}</button>
@@ -717,34 +788,52 @@
             }).join('');
         }
 
-        // Inline book page update: calculates difference from current bookmark
-        function updateBookFromInline() {
-            const input = document.getElementById('inline-page-input');
+        // Update pages from a specific book in the dropdown and sum to the reading goal
+        function updateSingleBookPage(bookId) {
+            const input = document.getElementById(`book-input-${bookId}`);
             if (!input) return;
             const newPage = parseInt(input.value, 10);
-            if (isNaN(newPage) || newPage <= 0) return;
+            if (isNaN(newPage) || newPage < 0) return;
 
-            const oldPage = state.bookTracker.currentPage || 0;
+            const book = state.books.find(b => b.id === bookId);
+            if (!book) return;
+
+            const oldPage = book.currentPage || 0;
             const pagesRead = newPage - oldPage;
 
+            const readingGoal = state.goals.find(g => g.id === 'reading' || g.isBook);
+            const readingGoalId = readingGoal ? readingGoal.id : 'reading';
+
             if (pagesRead > 0) {
-                state.bookTracker.currentPage = newPage;
-                updateProgress('reading', pagesRead, false, `Pág. ${oldPage} → ${newPage}`);
-            } else if (pagesRead < 0) {
-                // If user typed a lower page number (e.g. started a new book), update bookmark directly
-                state.bookTracker.currentPage = newPage;
+                book.currentPage = newPage;
+                updateProgress(readingGoalId, pagesRead, false, `${book.title}: pág. ${oldPage} → ${newPage}`);
+            } else {
+                // If user enters a lower page, just reset bookmark
+                book.currentPage = newPage;
                 saveState();
                 renderAll();
             }
             input.value = '';
         }
 
-        function openBookModal() {
+        function openAddBookModal() {
+            document.getElementById('book-modal-title').textContent = '📖 Añadir nuevo libro';
+            document.getElementById('book-modal-id').value = '';
+            document.getElementById('book-title-input').value = '';
+            document.getElementById('book-start-page').value = '0';
             const m = document.getElementById('book-modal');
-            document.getElementById('book-title-input').value = state.bookTracker.title || '';
-            document.getElementById('book-start-page').value = state.bookTracker.currentPage || 0;
-            document.getElementById('book-current-page').value = '';
-            document.getElementById('book-diff-preview').textContent = 'Introduce la página actual para calcular automáticamente las páginas leídas.';
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function openEditBookModal(bookId) {
+            const book = state.books.find(b => b.id === bookId);
+            if (!book) return;
+            document.getElementById('book-modal-title').textContent = '✏️ Editar libro';
+            document.getElementById('book-modal-id').value = book.id;
+            document.getElementById('book-title-input').value = book.title;
+            document.getElementById('book-start-page').value = book.currentPage;
+            const m = document.getElementById('book-modal');
             m.classList.remove('hidden');
             m.classList.add('flex');
         }
@@ -755,45 +844,79 @@
             m.classList.remove('flex');
         }
 
-        function previewPagesRead() {
-            const s = parseInt(document.getElementById('book-start-page').value, 10) || 0;
-            const c = parseInt(document.getElementById('book-current-page').value, 10);
-            const preview = document.getElementById('book-diff-preview');
-            if (!isNaN(c) && c > s) {
-                const diff = c - s;
-                preview.innerHTML = `Has leído <b class="text-[#81C995] text-sm">+${diff} páginas</b> (de la ${s} a la ${c}).`;
-            } else {
-                preview.textContent = 'Introduce una página superior a la inicial para sumar tu lectura.';
-            }
-        }
+        function saveBookModal() {
+            const id = document.getElementById('book-modal-id').value;
+            const title = document.getElementById('book-title-input').value.trim() || 'Libro sin título';
+            const startPage = parseInt(document.getElementById('book-start-page').value, 10) || 0;
 
-        function setBookmarkOnly() {
-            const title = document.getElementById('book-title-input').value.trim();
-            const startPage = parseInt(document.getElementById('book-start-page').value, 10);
-            if (title) state.bookTracker.title = title;
-            if (!isNaN(startPage) && startPage >= 0) {
-                state.bookTracker.currentPage = startPage;
+            if (id) {
+                const book = state.books.find(b => b.id === id);
+                if (book) {
+                    book.title = title;
+                    book.currentPage = Math.max(0, startPage);
+                }
+            } else {
+                state.books.push({
+                    id: 'b_' + Date.now(),
+                    title,
+                    currentPage: Math.max(0, startPage)
+                });
             }
+            state.booksExpanded = true;
             saveState();
             closeBookModal();
             renderAll();
         }
 
-        function confirmBookReading() {
-            const title = document.getElementById('book-title-input').value.trim();
-            const startPage = parseInt(document.getElementById('book-start-page').value, 10) || 0;
-            const currentPage = parseInt(document.getElementById('book-current-page').value, 10);
+        function deleteBook(bookId) {
+            if (state.books.length <= 1) return;
+            state.books = state.books.filter(b => b.id !== bookId);
+            saveState();
+            renderAll();
+        }
 
-            if (title) state.bookTracker.title = title;
+        // Edit existing goal modal functions
+        function openEditGoalModal(goalId) {
+            const g = state.goals.find(item => item.id === goalId);
+            if (!g) return;
+            document.getElementById('edit-goal-id').value = g.id;
+            document.getElementById('edit-goal-name').value = g.name;
+            document.getElementById('edit-goal-target').value = g.target;
+            document.getElementById('edit-goal-unit').value = g.unit;
+            document.getElementById('edit-goal-step').value = g.step;
+            document.getElementById('edit-goal-color').value = g.color;
 
-            if (!isNaN(currentPage) && currentPage > startPage) {
-                const diff = currentPage - startPage;
-                state.bookTracker.currentPage = currentPage;
-                updateProgress('reading', diff, false, `Pág. ${startPage} → ${currentPage}`);
-                closeBookModal();
-            } else {
-                setBookmarkOnly();
-            }
+            const m = document.getElementById('edit-goal-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeEditGoalModal() {
+            const m = document.getElementById('edit-goal-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function saveEditedGoal() {
+            const id = document.getElementById('edit-goal-id').value;
+            const g = state.goals.find(item => item.id === id);
+            if (!g) return;
+
+            const newName = document.getElementById('edit-goal-name').value.trim();
+            const newTarget = parseInt(document.getElementById('edit-goal-target').value, 10);
+            const newUnit = document.getElementById('edit-goal-unit').value.trim();
+            const newStep = parseInt(document.getElementById('edit-goal-step').value, 10);
+            const newColor = document.getElementById('edit-goal-color').value;
+
+            if (newName) g.name = newName;
+            if (!isNaN(newTarget) && newTarget > 0) g.target = newTarget;
+            if (newUnit) g.unit = newUnit;
+            if (!isNaN(newStep) && newStep > 0) g.step = newStep;
+            if (newColor) g.color = newColor;
+
+            saveState();
+            closeEditGoalModal();
+            renderAll();
         }
 
         function renderJournal() {
@@ -806,7 +929,7 @@
                 container.innerHTML = `
                     <div class="bg-[#1E1F22] rounded-2xl p-8 text-center border border-white/5">
                         <p class="text-sm text-gray-400">No hay registros en este día todavía.</p>
-                        <p class="text-xs text-gray-500 mt-1">Actualiza tu página del libro o pulsa el botón verde ✓ para registrar actividad.</p>
+                        <p class="text-xs text-gray-500 mt-1">Despliega tus libros o pulsa el botón verde ✓ para registrar actividad.</p>
                     </div>
                 `;
                 return;
@@ -815,13 +938,13 @@
             container.innerHTML = logs.map(item => `
                 <div class="bg-[#1E1F22] rounded-2xl p-3.5 border border-white/5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full" style="background:${item.color}"></span>
+                        <span class="w-3 h-3 rounded-full shrink-0" style="background:${item.color}"></span>
                         <div>
                             <p class="text-sm font-medium text-white">${item.goalName}</p>
                             <p class="text-xs text-gray-400">Total hoy: ${item.total}</p>
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right shrink-0">
                         <span class="text-xs font-semibold text-white bg-[#28292C] px-2.5 py-1 rounded-lg">${item.delta}</span>
                         <p class="text-[10px] text-gray-500 mt-1">${item.time}</p>
                     </div>
@@ -881,10 +1004,13 @@
                         <span class="w-3.5 h-3.5 rounded-full" style="background:${g.color}"></span>
                         <div>
                             <p class="text-sm font-medium text-white">${g.name}</p>
-                            <p class="text-xs text-gray-400">${g.target} ${g.unit} / día</p>
+                            <p class="text-xs text-gray-400">Meta: ${g.target} ${g.unit} / día</p>
                         </div>
                     </div>
-                    ${state.goals.length > 1 ? `<button onclick="deleteGoal('${g.id}')" class="text-xs text-red-400 hover:text-red-300 px-2 py-1">Eliminar</button>` : ''}
+                    <div class="flex items-center gap-1">
+                        <button onclick="openEditGoalModal('${g.id}')" class="text-xs bg-[#1E1F22] text-[#8AB4F8] px-2.5 py-1 rounded-lg border border-white/10">Editar</button>
+                        ${state.goals.length > 1 ? `<button onclick="deleteGoal('${g.id}')" class="text-xs text-red-400 hover:text-red-300 px-2 py-1">Eliminar</button>` : ''}
+                    </div>
                 </div>
             `).join('');
         }
@@ -902,7 +1028,6 @@
             switchTab('explore');
         }
 
-        // Notifications at 22:30
         function saveReminderTime(val) {
             state.reminderTime = val || '22:30';
             saveState();
@@ -926,7 +1051,6 @@
             });
         }
 
-        // Creates a recurring daily 22:30 calendar alarm (.ics) or opens Google Calendar so Xiaomi rings even when Chrome is closed
         function setNativeAndroidAlarm() {
             const [hours, minutes] = (state.reminderTime || '22:30').split(':');
             const icsContent = [
@@ -956,7 +1080,6 @@
             link.remove();
         }
 
-        // Background check every 30 seconds while app is open/in memory
         setInterval(() => {
             const now = new Date();
             const currentHHMM = now.toTimeString().slice(0, 5);
@@ -1116,7 +1239,7 @@
                     if (parsed.goals && parsed.history) {
                         state.goals = parsed.goals;
                         state.history = parsed.history;
-                        if (parsed.bookTracker) state.bookTracker = parsed.bookTracker;
+                        if (parsed.books) state.books = parsed.books;
                         saveState();
                         renderAll();
                     }
